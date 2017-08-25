@@ -1,0 +1,4 @@
+deb http://mirrors.aliyuncs.com/debian/ jessie main non-free contrib
+deb http://mirrors.aliyuncs.com/debian/ jessie-proposed-updates main non-free contrib
+deb-src http://mirrors.aliyuncs.com/debian/ jessie main non-free contrib
+deb-src http://mirrors.aliyuncs.com/debian/ jessie-proposed-updates main non-free contrib

@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+IMAGE_NAME=fishtrip-ruby-2.4
+VERSION=latest
+
+echo "online build $IMAGE_NAME:$VERSION"
+echo
+
+cp ../../aliyun.sources.list.online ./sources.list
+docker build -t $IMAGE_NAME:$VERSION .
+rm -rf ./sources.list
