@@ -1,0 +1,95 @@
+#!/bin/sh
+set -e
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+WHITE='\033[1;37m'
+NC='\033[0m'
+
+TAG_POSTFIX="fishtrip"
+CURRENT_PATH=`pwd`
+ONLINE_REMOTE_URL="registry-internal.cn-beijing.aliyuncs.com/fishtrip"
+ONLINE_SOURCES_LIST_FILE="./aliyun.sources.list.online"
+LOCAL_REMOTE_URL="registry.cn-beijing.aliyuncs.com/fishtrip"
+LOCAL_SOURCES_LIST_FILE="./aliyun.sources.list.local"
+DEFAULT_MAINTAINER="hxy <huangxuanyu@fishtrip.cn>"
+
+for i in "$@"
+do
+case $i in
+    -l=*|--language=*)
+    LANGUAGE="${i#*=}"
+    shift
+    ;;
+    -v=*|--version=*)
+    VERSION="${i#*=}"
+    shift
+    ;;
+    -o=*|--online=*)
+    ONLINE="${i#*=}"
+    shift
+    ;;
+    -m=*|--maintainer==*)
+    MAINTAINER="${i#*=}"
+    ;;
+    -h|--help)
+    echo 'Options:
+  -v, --version         Set version
+  -l, --language        Set language
+  -o, --online          Set using online environment
+  -m, --maintainer      Set maintainer'
+    exit 0
+    ;;
+    --default)
+    DEFAULT=YES
+    shift
+    ;;
+    *)
+    ;;
+esac
+done
+
+DOCKERFILE=$CURRENT_PATH/$LANGUAGE/Dockerfile
+if [[ ! -n $MAINTAINER ]] ; then
+  MAINTAINER=$DEFAULT_MAINTAINER
+fi
+BUILD_TAG=${VERSION}-${TAG_POSTFIX}
+if [[ -n $ONLINE ]] ; then
+  cp $ONLINE_SOURCES_LIST_FILE $CURRENT_PATH/sources.list
+  REMOTE_URL=$ONLINE_REMOTE_URL/$LANGUAGE:$BUILD_TAG
+else
+  cp $LOCAL_SOURCES_LIST_FILE $CURRENT_PATH/sources.list
+  REMOTE_URL=$LOCAL_REMOTE_URL/$LANGUAGE:$BUILD_TAG
+fi
+
+echo "${WHITE}#### CHECK BUILD OPTIONS: ####\n${NC}"
+echo "DOCKERFILE = ${DOCKERFILE}"
+echo "LANGUAGE   = ${LANGUAGE}"
+echo "VERSION    = ${VERSION}"
+echo "BUILD_TAG  = ${BUILD_TAG}"
+echo "MAINTAINER = ${MAINTAINER}"
+echo "REMOTE_URL = ${REMOTE_URL}"
+echo
+
+if [[ ! -n $LANGUAGE ]] || [[ ! -n $VERSION ]]; then
+  echo "WARNING: OPTIONS [--language] or [--version] can't be blank!!!"
+  exit 1
+fi
+
+if [[ ! -f $DOCKERFILE ]]; then
+  echo "WARNING: $DOCKERFILE not exist!!!"
+  exit 1
+fi
+
+BUILD_COMMAND="docker build -t $BUILD_TAG --build-arg VERSION=$VERSION --build-arg MAINTAINER='$MAINTAINER' -f $DOCKERFILE ."
+
+echo "${WHITE}#### BUILD COMMAND: $BUILD_COMMAND${NC}\n"
+
+eval $BUILD_COMMAND
+
+rm -rf $CURRENT_PATH/sources.list
+
+echo "${WHITE}#### START PUSH IMAGE TO REMOTE $REMOTE_URL/$LANGUAGE:$BUILD_TAG${NC}\n"
+docker tag $BUILD_TAG $REMOTE_URL
+docker push $REMOTE_URL

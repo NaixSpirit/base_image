@@ -1,6 +1,11 @@
-FROM ruby:2.2-slim
+ARG VERSION=latest
 
-LABEL maintainer="hxy <huangxuanyu@fishtrip.cn>"
+FROM ruby:$VERSION-slim
+
+ARG VERSION
+ARG MAINTAINER
+
+LABEL maintainer=$MAINTAINER
 
 COPY sources.list /etc/apt/
 
