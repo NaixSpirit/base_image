@@ -8,7 +8,7 @@ SOURCES_LIST_FILE="../../aliyun.sources.list.online"
 EXTRA_HOSTS_FILE="../../hosts"
 EXTRA_HOSTS=""
 
-echo "#### Start build image $IMAGE_NAME:$VERSION ###"
+echo "#### Start build image $IMAGE_NAME:$VERSION"
 echo
 
 cp $SOURCES_LIST_FILE ./sources.list
@@ -24,12 +24,12 @@ done < $EXTRA_HOSTS_FILE
 BUILD_COMMAND="docker build -t $IMAGE_NAME:$VERSION $EXTRA_HOSTS ."
 echo "#### Build command: $BUILD_COMMAND"
 
-`$BUILD_COMMAND`
+eval $BUILD_COMMAND
 
 rm -rf ./sources.list
 
 echo
-echo "Start push image to remote $REMOTE_URL/$IMAGE_NAME:$VERSION"
+echo "#### Start push image to remote $REMOTE_URL/$IMAGE_NAME:$VERSION"
 echo
 docker tag $IMAGE_NAME:$VERSION $REMOTE_URL/$IMAGE_NAME:$VERSION
 docker push $REMOTE_URL/$IMAGE_NAME:$VERSION
