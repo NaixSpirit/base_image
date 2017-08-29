@@ -21,7 +21,11 @@ do
   fi
 done < $EXTRA_HOSTS_FILE
 
-docker build -t $IMAGE_NAME:$VERSION . $EXTRA_HOSTS
+BUILD_COMMAND="docker build -t $IMAGE_NAME:$VERSION $EXTRA_HOSTS ."
+echo "#### Build command: $BUILD_COMMAND"
+
+`$BUILD_COMMAND`
+
 rm -rf ./sources.list
 
 echo
