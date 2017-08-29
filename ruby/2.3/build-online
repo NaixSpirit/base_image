@@ -3,7 +3,7 @@ set -e
 
 IMAGE_NAME=ruby
 VERSION=2.3-fishtrip
-REMOTE_URL=registry-internal.cn-beijing.aliyuncs.com
+REMOTE_URL=registry-internal.cn-beijing.aliyuncs.com/fishtrip
 
 echo "1. build image $IMAGE_NAME:$VERSION"
 echo
