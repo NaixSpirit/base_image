@@ -4,18 +4,28 @@ set -e
 IMAGE_NAME=ruby
 VERSION=2.3-fishtrip
 REMOTE_URL=registry.cn-beijing.aliyuncs.com/fishtrip
+SOURCES_LIST_FILE="../../aliyun.sources.list.local"
+EXTRA_HOSTS_FILE="../../hosts"
+EXTRA_HOSTS=""
 
-echo "1. build image $IMAGE_NAME:$VERSION"
+echo "#### Start build image $IMAGE_NAME:$VERSION"
 echo
 
-cp ../../aliyun.sources.list.local ./sources.list
-cp ../../hosts ./hosts
-docker build -t $IMAGE_NAME:$VERSION .
+cp $SOURCES_LIST_FILE ./sources.list
+while read -r line
+do
+  [[ "$line" =~ ^#.*$ ]] && continue
+  if [ ! -z "$line" ]; then
+    str=`echo $line | awk '{printf "--add-host %s:%s", $2, $1}'`
+    EXTRA_HOSTS="$EXTRA_HOSTS $str"
+  fi
+done < $EXTRA_HOSTS_FILE
+
+docker build -t $IMAGE_NAME:$VERSION . $EXTRA_HOSTS
 rm -rf ./sources.list
-rm -rf ./hosts
 
 echo
-echo "2.push image to remote $REMOTE_URL/$IMAGE_NAME:$VERSION"
+echo "#### Start push image to remote $REMOTE_URL/$IMAGE_NAME:$VERSION"
 echo
 docker tag $IMAGE_NAME:$VERSION $REMOTE_URL/$IMAGE_NAME:$VERSION
 docker push $REMOTE_URL/$IMAGE_NAME:$VERSION
