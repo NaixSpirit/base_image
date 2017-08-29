@@ -1,13 +1,21 @@
 #!/bin/sh
 set -e
 
-IMAGE_NAME=fishtrip-ruby-2.2
-VERSION=latest
+IMAGE_NAME=ruby
+VERSION=2.2-fishtrip
+REMOTE_URL=registry.cn-beijing.aliyuncs.com/fishtrip
 
-echo "local build $IMAGE_NAME:$VERSION"
+echo "1. build image $IMAGE_NAME:$VERSION"
 echo
 
 cp ../../aliyun.sources.list.local ./sources.list
 cp ../../hosts ./hosts
 docker build -t $IMAGE_NAME:$VERSION .
 rm -rf ./sources.list
+rm -rf ./hosts
+
+echo
+echo "2.push image to remote $REMOTE_URL/$IMAGE_NAME:$VERSION"
+echo
+docker tag $IMAGE_NAME:$VERSION $REMOTE_URL/$IMAGE_NAME:$VERSION
+docker push $REMOTE_URL/$IMAGE_NAME:$VERSION
