@@ -8,5 +8,6 @@ echo "online build $IMAGE_NAME:$VERSION"
 echo
 
 cp ../../aliyun.sources.list.online ./sources.list
+cp ../../host ./host
 docker build -t $IMAGE_NAME:$VERSION .
 rm -rf ./sources.list
