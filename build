@@ -23,6 +23,7 @@ Options:
 -v, --version [VERSION]         Set version
 -m, --maintainer [MAINTAINER]   Set maintainer
 -o, --online                    Set using online environment
+-p, --push                      Set push image to registry
 -h, --help                      Show help
 EOF
 
@@ -45,6 +46,9 @@ while [ $# -gt 0 ] ; do
         ;;
     -o|--online)
         ONLINE=1
+        ;;
+    -p|--push)
+        PUSH=1
         ;;
     -h|--help)
         usage
@@ -105,6 +109,8 @@ eval $BUILD_COMMAND
 
 rm -rf $CURRENT_PATH/sources.list
 
-echo "#### START PUSH IMAGE TO REMOTE $REMOTE_URL"
-docker tag $IMAGE_NAME:$BUILD_TAG $REMOTE_URL/$IMAGE_NAME:$BUILD_TAG
-docker push $REMOTE_URL/$IMAGE_NAME:$BUILD_TAG
+if [[ -n $PUSH ]] ; then
+    echo "#### START PUSH IMAGE TO REMOTE $REMOTE_URL"
+    docker tag $IMAGE_NAME:$BUILD_TAG $REMOTE_URL/$IMAGE_NAME:$BUILD_TAG
+    docker push $REMOTE_URL/$IMAGE_NAME:$BUILD_TAG
+fi
