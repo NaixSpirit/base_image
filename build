@@ -8,7 +8,7 @@ ONLINE_REMOTE_URL="registry-internal.cn-beijing.aliyuncs.com/fishtrip"
 ONLINE_SOURCES_LIST_FILE="./aliyun.sources.list.online"
 LOCAL_REMOTE_URL="registry.cn-beijing.aliyuncs.com/fishtrip"
 LOCAL_SOURCES_LIST_FILE="./aliyun.sources.list.local"
-DEFAULT_MAINTAINER="hxy <huangxuanyu@fishtrip.cn>"
+DEFAULT_MAINTAINER="$(git config user.name) <$(git config user.email)>"
 
 usage() {
     if [ "$*" != "" ]; then
