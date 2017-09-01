@@ -1,6 +1,7 @@
 #!/bin/sh
 set -e
 
+PROGNAME=$(basename $0)
 TAG_POSTFIX="fishtrip"
 CURRENT_PATH=`pwd`
 ONLINE_REMOTE_URL="registry-internal.cn-beijing.aliyuncs.com/fishtrip"
@@ -9,81 +10,101 @@ LOCAL_REMOTE_URL="registry.cn-beijing.aliyuncs.com/fishtrip"
 LOCAL_SOURCES_LIST_FILE="./aliyun.sources.list.local"
 DEFAULT_MAINTAINER="hxy <huangxuanyu@fishtrip.cn>"
 
-for i in "$@"
-do
-case $i in
-    -l=*|--language=*)
-    LANGUAGE="${i#*=}"
-    shift
-    ;;
-    -v=*|--version=*)
-    VERSION="${i#*=}"
-    shift
-    ;;
-    -o=*|--online=*)
-    ONLINE="${i#*=}"
-    shift
-    ;;
-    -m=*|--maintainer==*)
-    MAINTAINER="${i#*=}"
-    ;;
+usage() {
+    if [ "$*" != "" ]; then
+        echo "Error: $*"
+    fi
+
+    cat << EOF
+Usage: ./$PROGNAME [OPTION ...]
+
+Options:
+-i, --image [IMAGE]             Set image name
+-v, --version [VERSION]         Set version
+-m, --maintainer [MAINTAINER]   Set maintainer
+-o, --online                    Set using online environment
+-h, --help                      Show help
+EOF
+
+    exit 1
+}
+
+while [ $# -gt 0 ] ; do
+    case "$1" in
+    -i|--image)
+        IMAGE_NAME="$2"
+        shift
+        ;;
+    -v|--version)
+        VERSION="$2"
+        shift
+        ;;
+    -m|--maintainer)
+        MAINTAINER="$2"
+        shift
+        ;;
+    -o|--online)
+        ONLINE=1
+        ;;
     -h|--help)
-    echo 'Options:
-  -v, --version         Set version
-  -l, --language        Set language
-  -o, --online          Set using online environment
-  -m, --maintainer      Set maintainer'
-    exit 0
-    ;;
-    --default)
-    DEFAULT=YES
-    shift
-    ;;
+        usage
+        ;;
+    -*)
+        usage "Unknown option '$1'"
+        ;;
     *)
-    ;;
-esac
+        ;;
+    esac
+    shift
 done
 
-DOCKERFILE=$CURRENT_PATH/$LANGUAGE/Dockerfile
+DOCKERFILE=$CURRENT_PATH/$IMAGE_NAME/Dockerfile
 if [[ ! -n $MAINTAINER ]] ; then
-  MAINTAINER=$DEFAULT_MAINTAINER
+    MAINTAINER=$DEFAULT_MAINTAINER
 fi
 BUILD_TAG=${VERSION}-${TAG_POSTFIX}
 if [[ -n $ONLINE ]] ; then
   cp $ONLINE_SOURCES_LIST_FILE $CURRENT_PATH/sources.list
-  REMOTE_URL=$ONLINE_REMOTE_URL/$LANGUAGE
+  REMOTE_URL=$ONLINE_REMOTE_URL
 else
   cp $LOCAL_SOURCES_LIST_FILE $CURRENT_PATH/sources.list
-  REMOTE_URL=$LOCAL_REMOTE_URL/$LANGUAGE
+  REMOTE_URL=$LOCAL_REMOTE_URL
 fi
 
-echo "#### CHECK BUILD OPTIONS: ####\n"
+echo "#### CHECK BUILD OPTIONS: ####"
 echo "DOCKERFILE = ${DOCKERFILE}"
-echo "LANGUAGE   = ${LANGUAGE}"
+echo "IMAGE      = ${IMAGE_NAME}"
 echo "VERSION    = ${VERSION}"
 echo "BUILD_TAG  = ${BUILD_TAG}"
 echo "MAINTAINER = ${MAINTAINER}"
 echo "REMOTE_URL = ${REMOTE_URL}"
 echo
 
-if [[ ! -n $LANGUAGE ]] || [[ ! -n $VERSION ]]; then
-  echo "WARNING: OPTIONS [--language] or [--version] can't be blank!!!"
-  exit 1
+if [[ ! -n $IMAGE_NAME ]] || [[ ! -n $VERSION ]]; then
+    echo "WARNING: OPTIONS [--image] or [--version] can't be blank!!!"
+    exit 1
 fi
 
 if [[ ! -f $DOCKERFILE ]]; then
-  echo "WARNING: $DOCKERFILE not exist!!!"
-  exit 1
+    echo "WARNING: $DOCKERFILE not exist!!!"
+    exit 1
 fi
 
-BUILD_COMMAND="docker build -t $LANGUAGE:$BUILD_TAG --build-arg VERSION=$VERSION --build-arg MAINTAINER='$MAINTAINER' -f $DOCKERFILE ."
+echo "#### CHECK BUILD OPTIONS PASSED"
+echo
 
-echo "#### BUILD COMMAND: $BUILD_COMMAND\n"
+BUILD_COMMAND="docker build -t $IMAGE_NAME:$BUILD_TAG \
+--build-arg VERSION=$VERSION \
+--build-arg MAINTAINER='$MAINTAINER' \
+-f $DOCKERFILE ."
+
+echo "#### BUILD COMMAND: ####"
+echo "$BUILD_COMMAND"
 
 eval $BUILD_COMMAND
 
 rm -rf $CURRENT_PATH/sources.list
 
-echo "#### START PUSH IMAGE TO REMOTE $REMOTE_URL\n"
-docker tag $LANGUAGE:$BUILD_TAG $REMOTE_URL:$BUILD_TAG
-docker push $REMOTE_URL:$BUILD_TAG
+echo "#### START PUSH IMAGE TO REMOTE $REMOTE_URL"
+docker tag $IMAGE_NAME:$BUILD_TAG $REMOTE_URL/$IMAGE_NAME:$BUILD_TAG
+docker push $REMOTE_URL/$IMAGE_NAME:$BUILD_TAG
