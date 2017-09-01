@@ -71,7 +71,7 @@ else
   REMOTE_URL=$LOCAL_REMOTE_URL
 fi
 
-echo "#### CHECK BUILD OPTIONS: ####"
+echo "#### CHECK BUILD OPTIONS: ####\n"
 echo "DOCKERFILE = ${DOCKERFILE}"
 echo "IMAGE      = ${IMAGE_NAME}"
 echo "VERSION    = ${VERSION}"
