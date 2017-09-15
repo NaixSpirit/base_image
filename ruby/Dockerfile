@@ -16,5 +16,6 @@ RUN apt-get update \
                build-essential \
                nodejs \
                libmysqlclient-dev \
+               git-core \
     && apt-get clean all \
     && rm -rf /var/lib/apt/lists/*

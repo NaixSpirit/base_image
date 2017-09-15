@@ -2,7 +2,6 @@
 set -e
 
 PROGNAME=$(basename $0)
-TAG_POSTFIX="fishtrip"
 CURRENT_PATH=`pwd`
 ONLINE_REMOTE_URL="registry-internal.cn-beijing.aliyuncs.com/fishtrip"
 ONLINE_SOURCES_LIST_FILE="./aliyun.sources.list.online"
@@ -66,7 +65,7 @@ DOCKERFILE=$CURRENT_PATH/$IMAGE_NAME/Dockerfile
 if [[ ! -n $MAINTAINER ]] ; then
     MAINTAINER=$DEFAULT_MAINTAINER
 fi
-BUILD_TAG=${VERSION}-${TAG_POSTFIX}
+
 if [[ -n $ONLINE ]] ; then
   cp $ONLINE_SOURCES_LIST_FILE $CURRENT_PATH/sources.list
   REMOTE_URL=$ONLINE_REMOTE_URL
@@ -79,7 +78,6 @@ echo "#### CHECK BUILD OPTIONS: ####\n"
 echo "DOCKERFILE = ${DOCKERFILE}"
 echo "IMAGE      = ${IMAGE_NAME}"
 echo "VERSION    = ${VERSION}"
-echo "BUILD_TAG  = ${BUILD_TAG}"
 echo "MAINTAINER = ${MAINTAINER}"
 echo "REMOTE_URL = ${REMOTE_URL}"
 echo
@@ -97,7 +95,7 @@ fi
 echo "#### CHECK BUILD OPTIONS PASSED"
 echo
 
-BUILD_COMMAND="docker build -t $IMAGE_NAME:$BUILD_TAG \
+BUILD_COMMAND="docker build -t $REMOTE_URL/$IMAGE_NAME:$VERSION \
 --build-arg VERSION=$VERSION \
 --build-arg MAINTAINER='$MAINTAINER' \
 -f $DOCKERFILE ."
@@ -111,6 +109,5 @@ rm -rf $CURRENT_PATH/sources.list
 
 if [[ -n $PUSH ]] ; then
     echo "#### START PUSH IMAGE TO REMOTE $REMOTE_URL"
-    docker tag $IMAGE_NAME:$BUILD_TAG $REMOTE_URL/$IMAGE_NAME:$BUILD_TAG
-    docker push $REMOTE_URL/$IMAGE_NAME:$BUILD_TAG
+    docker push $REMOTE_URL/$IMAGE_NAME:$VERSION
 fi
