@@ -1,4 +1,4 @@
-# Fishtrip Docker Base Images
+# Docker Base Images
 
 ## Usage
 
