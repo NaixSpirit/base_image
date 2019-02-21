@@ -3,9 +3,9 @@ set -e
 
 PROGNAME=$(basename $0)
 CURRENT_PATH=`pwd`
-ONLINE_REMOTE_URL="registry-internal.cn-beijing.aliyuncs.com/fishtrip"
+ONLINE_REMOTE_URL="YOUR_ALIYUN_REMOTE_URL"
 ONLINE_SOURCES_LIST_FILE="./aliyun.sources.list.online"
-LOCAL_REMOTE_URL="registry.cn-beijing.aliyuncs.com/fishtrip"
+LOCAL_REMOTE_URL="YOUR_LOCAL_REMOTE_URL"
 LOCAL_SOURCES_LIST_FILE="./aliyun.sources.list.local"
 DEFAULT_MAINTAINER="$(git config user.name) <$(git config user.email)>"
 
